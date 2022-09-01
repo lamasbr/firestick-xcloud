@@ -1,34 +1,28 @@
-name: Android CI
+name: Build & Publish Debug APK
 
 on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
-
+ push:
+  branches:
+   - main
+   
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v3
-    - name: set up JDK 11
+    - name: set up JDK 1.8
       uses: actions/setup-java@v3
       with:
-        java-version: '11'
-        distribution: 'temurin'
-        cache: gradle
-
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
+        java-version: 11
+    - name: Make Gradle executable
+      run: chmod +x ./gradlew
     - name: Build with Gradle
       run: ./gradlew build
-
-    - name: Publish to GitHub Packages
-      uses: gradle/gradle-build-action@67421db6bd0bf253fb4bd25b31ebb98943c375e1
-      with:
-        arguments: publish
+    - name: Build Debug APK
+      run: ./gradlew assembleDebug
+    - name: Releasing using Hub
+      uses: ShaunLWM/action-release-debugapk@master
       env:
-        USERNAME: ${{ github.actor }}
-        TOKEN: ${{ secrets.GITHUB_TOKEN }}
+       GITHUB_TOKEN: ${{ secrets.TOKEN }}
+       APP_FOLDER: app
+       RELEASE_TITLE: New Build
